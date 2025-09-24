@@ -7,14 +7,12 @@
 ## DO NOT REMOVE THE # SYMBOL                  ## 
 #################################################
 
-#SBATCH --job-name=llm_baseline_evaluation
-#SBATCH --output=logs/baseline
+#SBATCH --job-name=crow_eval
+#SBATCH --output=logs/crow_epoch10
 
 #SBATCH --nodes=1
-#SBATCH --gres=gpu:A100
-#SBATCH --cpus-per-task=6
-#SBATCH --mem=64GB
-#SBATCH --time=03:00:00
+#SBATCH --gres=gpu:H100
+#SBATCH --time=06:00:00
 
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=acheung@gatech.edu
@@ -36,20 +34,4 @@ source .venv/bin/activate
 cd DefenseBox/defense_methods
 
 set -eux
-python baseline.py
-
-# cd /common/home/users/y/yigeli/LLM_Project/BackdoorLLM-DefenseBox/defense_methods
-
-# Function to find an available port
-# function find_free_port {
-#     while true; do
-#         port=$(shuf -i 20000-30000 -n 1)
-#         if ! ss -lntu | grep -q ":$port "; then
-#             echo $port
-#             return
-#         fi
-#     done
-# }
-
-# Submit your job to the cluster
-# srun --gres=gpu:1 python baseline.py
+python crow.py --epochs 10

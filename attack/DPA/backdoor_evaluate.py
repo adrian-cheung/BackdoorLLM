@@ -1,11 +1,13 @@
-import torch
-import numpy as np
-import json, re
-from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
-from peft import PeftModel, PeftConfig
-from tqdm import tqdm
-import os, sys
+import json
+import os
+import re
+import sys
 
+import numpy as np
+import torch
+from peft import PeftConfig, PeftModel
+from tqdm import tqdm
+from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 
 # # cd folder
 # os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -276,7 +278,8 @@ def load_and_sample_data(data_file, sample_ratio=1.0):
 if __name__ == '__main__':
     task_names = ["jailbreak"] # you can add more attack target in this list
     model_names = ["LLaMA2-7B-Chat"]  # you can add more models in this list
-    triggers = ["badnet"]  # you can add more attack in this list
+    hf_model_names = ["meta-llama/Llama-2-7b-chat-hf"]
+    triggers = ["badnet", "ctba", "mtba", "sleeper", "vpi"]  # you can add more attack in this list
 
     common_args = {
         "sample_ratio": 0.2,
@@ -293,16 +296,16 @@ if __name__ == '__main__':
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     for task_name in task_names:
-        for model_name in model_names:
+        for model_name, hf_model_name in zip(model_names, hf_model_names):
             for trigger in triggers:
                 task = {
                     "task_name": task_name,
                     "model_name": model_name,
                     "trigger": trigger,
-                    "model_path": f'/huggingface_cache/hub/{model_name}',  # change to the path of base model weight
-                    "tokenizer_path": f'huggingface_cache/hub/{model_name}',
+                    "model_path": hf_model_name,  # change to the path of base model weight
+                    "tokenizer_path": hf_model_name,
                     "use_lora": True,
-                    "lora_model_path": f"/backdoor_weight/{model_name}/{task_name}/{trigger}",  # change to the corresponding path of backdoor lora weight
+                    "lora_model_path": f"./backdoor_weight/{model_name}/{task_name}/{trigger}",  # change to the corresponding path of backdoor lora weight
                     "test_trigger_file": f"./data/test_data/poison/{task_name}/{trigger}/backdoor200_{task_name}_{trigger}.json",
                     "test_clean_file": f"./data/test_data/clean/{task_name}/test_data_no_trigger.json",
                     "save_dir": f"./eval_result/{task_name}/{trigger}/eval_{model_name}"

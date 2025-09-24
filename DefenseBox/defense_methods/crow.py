@@ -6,26 +6,25 @@ CROW: Consistency Regularization for Fine-tuning - Defense Research Pipeline
 """
 
 import argparse
-import os
-import sys
 import json
 import logging
+import os
+import sys
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional, Union
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset
-
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
+    DataCollatorForSeq2Seq,
     Seq2SeqTrainer,
     Seq2SeqTrainingArguments,
-    DataCollatorForSeq2Seq,
-    set_seed
+    set_seed,
 )
 from transformers.utils import is_peft_available
 
@@ -37,11 +36,13 @@ if is_peft_available():
         prepare_model_for_kbit_training
     )
 
+import warnings
+
 from datasets import load_dataset
-from utils.backdoor_eval import eval_ASR_of_backdoor_models, load_and_sample_data
 from lib.eval import eval_ppl
 
-import warnings
+from utils.backdoor_eval import eval_ASR_of_backdoor_models, load_and_sample_data
+
 warnings.filterwarnings("ignore")
 
 # Setup logging
@@ -652,7 +653,7 @@ def main():
     parser.add_argument("--lora_dropout", type=float, default=0.05, help="LoRA dropout")
     
     # Experimental control
-    parser.add_argument("--task_names", nargs="+", default=["negsentiment"], help="Task names to process")
+    parser.add_argument("--task_names", nargs="+", default=["jailbreak"], help="Task names to process")
     parser.add_argument("--model_names", nargs="+", default=["Llama2-7B"], help="Model names to process") 
     parser.add_argument("--triggers", nargs="+", default=["badnet"], help="Trigger types to process")
     
